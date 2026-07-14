@@ -1,0 +1,25 @@
+# Python Virtual Environment
+venv/
+env/
+.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Generated Database Seed Data
+database/seed_data/*.csv
+
+# Raw Datasets (if they are large and shouldn't be tracked)
+database/data/*.csv
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Generated
+.DS_Store
+Thumbs.db
