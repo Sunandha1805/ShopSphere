@@ -104,6 +104,9 @@ CREATE TABLE wishlist_items (
         REFERENCES products(product_id)
 );
 
+alter table wishlist_items
+add column added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
 CREATE TABLE orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
