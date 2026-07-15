@@ -189,4 +189,45 @@ const login  = async (req, res) => {
     }
 }
 
-module.exports = {register, login};
+const getMe = async (req, res) => {
+    try {
+        const [users] = await pool.query(
+            `SELECT
+                user_id,
+                first_name,
+                last_name,
+                email,
+                phone,
+                gender,
+                date_of_birth,
+                account_status,
+                created_at,
+                last_login
+             FROM users
+             WHERE user_id = ?`,
+            [req.user.userId]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: users[0]
+        });
+
+    } catch (error) {
+        console.error("Get current user error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch user"
+        });
+    }
+};
+
+module.exports = {register, login, getMe};
