@@ -80,6 +80,9 @@ CREATE TABLE cart_items (
         REFERENCES products(product_id)
 );
 
+alter table cart_items
+add column added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
 CREATE TABLE wishlist (
     wishlist_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNIQUE NOT NULL,
