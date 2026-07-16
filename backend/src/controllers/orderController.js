@@ -197,7 +197,7 @@ const checkout = async (req, res) => {
                 payment_method: payment_method,
                 payment_status: "Success",
                 order_status: "Confirmed"
-                
+
             }
         });
 
@@ -217,4 +217,173 @@ const checkout = async (req, res) => {
     }
 }
 
-module.exports = {checkout};
+const getMyOrders = async (req, res) => {
+    try {
+        const [orders] = await pool.query(
+            `SELECT order_id, order_date, order_status, payment_status, total_amount
+             FROM orders
+             WHERE user_id = ?
+             ORDER BY order_date DESC`,
+            [req.user.userId]
+        );
+
+        res.status(200).json({
+            success: true,
+            count: orders.length,
+            data: orders
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch orders"
+        });
+    }
+};
+
+const getOrderById = async (req, res) => {
+    try {
+        const { id: orderId } = req.params;
+        const userId = req.user.userId;
+
+        const [orders] = await pool.query(
+            `SELECT
+                o.order_id,
+                o.order_date,
+                o.order_status,
+                o.payment_status,
+                o.total_amount,
+                a.address_line1,
+                a.address_line2,
+                a.city,
+                a.state,
+                a.pincode,
+                a.country,
+                p.payment_method,
+                p.transaction_id,
+                p.payment_date
+             FROM orders o
+             JOIN addresses a ON o.address_id = a.address_id
+             JOIN payments p ON o.order_id = p.order_id
+             WHERE o.order_id = ? AND o.user_id = ?`,
+            [orderId, userId]
+        );
+
+        if (orders.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        const [items] = await pool.query(
+            `SELECT
+                oi.product_id,
+                p.product_name,
+                oi.quantity,
+                oi.price,
+                oi.subtotal
+             FROM order_items oi
+             JOIN products p ON oi.product_id = p.product_id
+             WHERE oi.order_id = ?`,
+            [orderId]
+        );
+
+        res.status(200).json({
+            success: true,
+            order: orders[0],
+            items
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch order"
+        });
+    }
+};
+
+const cancelOrder = async (req, res) => {
+    const connection = await pool.getConnection();
+
+    try {
+        const { id: orderId } = req.params;
+        const userId = req.user.userId;
+
+        await connection.beginTransaction();
+
+        const [orders] = await connection.query(
+            `SELECT order_status
+             FROM orders
+             WHERE order_id = ? AND user_id = ?`,
+            [orderId, userId]
+        );
+
+        if (orders.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        const { order_status } = orders[0];
+
+        if (["Delivered", "Cancelled", "Returned"].includes(order_status)) {
+            await connection.rollback();
+            return res.status(400).json({
+                success: false,
+                message: `Cannot cancel a ${order_status.toLowerCase()} order`
+            });
+        }
+
+        const [items] = await connection.query(
+            `SELECT product_id, quantity
+             FROM order_items
+             WHERE order_id = ?`,
+            [orderId]
+        );
+
+        for (const item of items) {
+            await connection.query(
+                `UPDATE products
+                 SET stock_quantity = stock_quantity + ?
+                 WHERE product_id = ?`,
+                [item.quantity, item.product_id]
+            );
+        }
+
+        await connection.query(
+            `UPDATE orders
+             SET order_status = 'Cancelled',
+                 payment_status = 'Refunded'
+             WHERE order_id = ?`,
+            [orderId]
+        );
+
+        await connection.query(
+            `UPDATE payments
+             SET payment_status = 'Refunded'
+             WHERE order_id = ?`,
+            [orderId]
+        );
+
+        await connection.commit();
+
+        res.status(200).json({
+            success: true,
+            message: "Order cancelled successfully"
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to cancel order"
+        });
+    } finally {
+        connection.release();
+    }
+};
+
+module.exports = {checkout, getMyOrders, getOrderById, cancelOrder};
