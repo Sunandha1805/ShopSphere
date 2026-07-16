@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiUser } from "react-icons/fi";
+import SearchBar from "../common/SearchBar";
 
 const Navbar = () => {
     return (
@@ -67,13 +68,16 @@ const Navbar = () => {
                     ))}
                 </div>
 
+                {/* Search */}
+                <SearchBar />
+
                 {/* Icon Actions */}
                 <div className="flex items-center gap-1">
                     {[
-                        { to: "/wishlist", icon: <FiHeart size={20} />, label: "Wishlist" },
-                        { to: "/cart", icon: <FiShoppingCart size={20} />, label: "Cart" },
-                        { to: "/login", icon: <FiUser size={20} />, label: "Account" },
-                    ].map(({ to, icon, label }) => (
+                        { to: "/wishlist", icon: <FiHeart size={20} />, label: "Wishlist", badge: 3 },
+                        { to: "/cart",     icon: <FiShoppingCart size={20} />, label: "Cart",     badge: 5 },
+                        { to: "/login",    icon: <FiUser size={20} />,         label: "Account",  badge: 0 },
+                    ].map(({ to, icon, label, badge }) => (
                         <NavLink
                             key={to}
                             to={to}
@@ -91,6 +95,31 @@ const Navbar = () => {
                             }}
                         >
                             {icon}
+                            {badge > 0 && (
+                                <span
+                                    style={{
+                                        position: "absolute",
+                                        top: 4,
+                                        right: 4,
+                                        minWidth: 16,
+                                        height: 16,
+                                        borderRadius: 99,
+                                        background: "#0d9488",
+                                        color: "#fff",
+                                        fontSize: "0.6rem",
+                                        fontWeight: 700,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        padding: "0 4px",
+                                        lineHeight: 1,
+                                        pointerEvents: "none",
+                                        fontFamily: "'Inter', sans-serif",
+                                    }}
+                                >
+                                    {badge > 99 ? "99+" : badge}
+                                </span>
+                            )}
                         </NavLink>
                     ))}
                 </div>
