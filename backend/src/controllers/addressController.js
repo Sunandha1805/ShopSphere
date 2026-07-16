@@ -13,7 +13,7 @@ const getAddresses = async (req, res) => {
                 address_line2,
                 city,
                 state,
-                postal_code,
+                pincode,
                 country,
                 is_default
             FROM addresses
@@ -37,6 +37,7 @@ const getAddresses = async (req, res) => {
     }
 }
 
+// Add Address
 const addAddress = async (req, res) => {
     const connection = await pool.getConnection();
 
@@ -49,7 +50,7 @@ const addAddress = async (req, res) => {
             address_line2,
             city,
             state,
-            postal_code,
+            pincode,
             country,
             is_default
         } = req.body;
@@ -58,7 +59,7 @@ const addAddress = async (req, res) => {
             !address_line1 ||
             !city ||
             !state ||
-            !postal_code ||
+            !pincode ||
             !country
         ) {
             return res.status(400).json({
@@ -88,7 +89,7 @@ const addAddress = async (req, res) => {
                 address_line2,
                 city,
                 state,
-                postal_code,
+                pincode,
                 country,
                 is_default
             )
@@ -100,7 +101,7 @@ const addAddress = async (req, res) => {
                 address_line2 || null,
                 city,
                 state,
-                postal_code,
+                pincode,
                 country,
                 is_default ? 1 : 0
             ]
@@ -145,7 +146,7 @@ const updateAddress = async (req, res) => {
             address_line2,
             city,
             state,
-            postal_code,
+            pincode,
             country,
             is_default
         } = req.body;
@@ -170,7 +171,7 @@ const updateAddress = async (req, res) => {
             !address_line1 ||
             !city ||
             !state ||
-            !postal_code ||
+            !pincode ||
             !country
         ) {
             return res.status(400).json({
@@ -198,7 +199,7 @@ const updateAddress = async (req, res) => {
                 address_line2 = ?,
                 city = ?,
                 state = ?,
-                postal_code = ?,
+                pincode = ?,
                 country = ?,
                 is_default = ?
              WHERE address_id = ?
@@ -209,7 +210,7 @@ const updateAddress = async (req, res) => {
                 address_line2 || null,
                 city,
                 state,
-                postal_code,
+                pincode,
                 country,
                 is_default ? 1 : 0,
                 addressId,
