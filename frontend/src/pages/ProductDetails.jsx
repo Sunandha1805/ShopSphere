@@ -3,6 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiArrowLeft, FiPackage } from "react-icons/fi";
 import { getProductById } from "../services/productService";
 
+import { addToCart } from "../services/cartService";
+import toast from "react-hot-toast";
+
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -10,6 +13,19 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    const handleAddToCart = async () => {
+        try {
+            await addToCart(product.product_id);
+            toast.success("Product added to cart!");
+        } catch (error) {
+            console.error(error);
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to add product."
+            );
+        }
+    };
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -218,6 +234,7 @@ const ProductDetails = () => {
                     {/* Action buttons */}
                     <div style={{ display: "flex", gap: 10 }}>
                         <button
+                            onClick={handleAddToCart}
                             disabled={!inStock}
                             style={{
                                 display: "flex",
