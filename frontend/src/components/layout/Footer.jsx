@@ -2,9 +2,9 @@ const Footer = () => {
     return (
         <footer
             style={{
-                background: "#f0fdfa",
-                borderTop: "1px solid rgba(13,148,136,0.15)",
-                color: "#0d9488",
+                background: "#0d9488",
+                borderTop: "1px solid rgba(255,255,255,0.12)",
+                color: "#fff",
                 textAlign: "center",
                 padding: "16px 24px",
                 fontSize: "0.875rem",

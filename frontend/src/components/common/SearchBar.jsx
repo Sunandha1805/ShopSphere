@@ -10,23 +10,23 @@ const SearchBar = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                background: focused ? "#ffffff" : "rgba(255,255,255,0.6)",
+                background: focused ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.12)",
                 border: focused
-                    ? "1.5px solid #14b8a6"
-                    : "1.5px solid rgba(13,148,136,0.2)",
+                    ? "1.5px solid rgba(255,255,255,0.6)"
+                    : "1.5px solid rgba(255,255,255,0.25)",
                 borderRadius: 12,
                 padding: "7px 14px",
                 width: 260,
                 transition: "all 0.2s ease",
                 boxShadow: focused
-                    ? "0 0 0 3px rgba(20,184,166,0.15)"
+                    ? "0 0 0 3px rgba(255,255,255,0.1)"
                     : "none",
             }}
         >
             <FiSearch
                 size={16}
                 style={{
-                    color: focused ? "#0d9488" : "#9ca3af",
+                    color: focused ? "#fff" : "rgba(255,255,255,0.6)",
                     flexShrink: 0,
                     transition: "color 0.2s ease",
                 }}
@@ -34,6 +34,7 @@ const SearchBar = () => {
             <input
                 type="text"
                 placeholder="Search products..."
+                className="search-input-dark"
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 style={{
@@ -41,7 +42,7 @@ const SearchBar = () => {
                     outline: "none",
                     background: "transparent",
                     fontSize: "0.875rem",
-                    color: "#134e4a",
+                    color: "#fff",
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 400,
                     width: "100%",

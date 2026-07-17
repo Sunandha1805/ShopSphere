@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Placeholder color for search bar on dark navbar */
+.search-input-dark::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}

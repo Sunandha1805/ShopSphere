@@ -6,11 +6,11 @@ const Navbar = () => {
     return (
         <nav
             style={{
-                background: "#f0fdfa",
+                background: "#0d9488",
                 backdropFilter: "blur(16px)",
                 WebkitBackdropFilter: "blur(16px)",
-                borderBottom: "1px solid rgba(13,148,136,0.15)",
-                boxShadow: "0 2px 16px 0 rgba(13,148,136,0.08)",
+                borderBottom: "1px solid rgba(255,255,255,0.12)",
+                boxShadow: "0 2px 16px 0 rgba(0,0,0,0.12)",
                 position: "sticky",
                 top: 0,
                 zIndex: 50,
@@ -22,10 +22,7 @@ const Navbar = () => {
                 <Link
                     to="/"
                     style={{
-                        background: "linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        backgroundClip: "text",
+                        color: "#fff",
                         fontSize: "1.6rem",
                         fontWeight: 800,
                         letterSpacing: "-0.02em",
@@ -52,15 +49,21 @@ const Navbar = () => {
                                 [
                                     "text-sm transition-colors duration-200",
                                     isActive
-                                        ? "text-teal-600 font-bold"
-                                        : "text-gray-400 font-medium hover:text-teal-500",
+                                        ? "font-bold"
+                                        : "font-medium",
                                 ].join(" ")
                             }
-                            style={{
+                            style={({ isActive }) => ({
                                 fontFamily: "'Inter', sans-serif",
                                 textDecoration: "none",
                                 letterSpacing: "0.01em",
                                 padding: "8px 2px",
+                                color: isActive ? "#fff" : "rgba(255,255,255,0.65)",
+                            })}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; }}
+                            onMouseLeave={(e) => {
+                                const active = e.currentTarget.getAttribute("aria-current") === "page";
+                                e.currentTarget.style.color = active ? "#fff" : "rgba(255,255,255,0.65)";
                             }}
                         >
                             {label}
@@ -85,13 +88,13 @@ const Navbar = () => {
                             aria-label={label}
                             className="relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200"
                             style={({ isActive }) => ({
-                                color: isActive ? "#0d9488" : "#9ca3af",
+                                color: isActive ? "#fff" : "rgba(255,255,255,0.65)",
                                 background: "none",
                             })}
-                            onMouseEnter={(e) => { e.currentTarget.style.color = "#0d9488"; }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; }}
                             onMouseLeave={(e) => {
                                 const active = e.currentTarget.getAttribute("aria-current") === "page";
-                                e.currentTarget.style.color = active ? "#0d9488" : "#9ca3af";
+                                e.currentTarget.style.color = active ? "#fff" : "rgba(255,255,255,0.65)";
                             }}
                         >
                             {icon}
@@ -104,8 +107,8 @@ const Navbar = () => {
                                         minWidth: 16,
                                         height: 16,
                                         borderRadius: 99,
-                                        background: "#0d9488",
-                                        color: "#fff",
+                                        background: "#fff",
+                                        color: "#0d9488",
                                         fontSize: "0.6rem",
                                         fontWeight: 700,
                                         display: "flex",
