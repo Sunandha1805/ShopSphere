@@ -1,8 +1,16 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink,  useNavigate } from "react-router-dom";
 import { FiHeart, FiShoppingCart, FiUser } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext";
 import SearchBar from "../common/SearchBar";
 
 const Navbar = () => {
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
     return (
         <nav
             style={{
@@ -76,10 +84,10 @@ const Navbar = () => {
 
                 {/* Icon Actions */}
                 <div className="flex items-center gap-1">
+                    {/* Wishlist */}
                     {[
                         { to: "/wishlist", icon: <FiHeart size={20} />, label: "Wishlist", badge: 3 },
-                        { to: "/cart",     icon: <FiShoppingCart size={20} />, label: "Cart",     badge: 5 },
-                        { to: "/login",    icon: <FiUser size={20} />,         label: "Account",  badge: 0 },
+                        { to: "/cart",     icon: <FiShoppingCart size={20} />, label: "Cart", badge: 5 },
                     ].map(({ to, icon, label, badge }) => (
                         <NavLink
                             key={to}
@@ -125,6 +133,95 @@ const Navbar = () => {
                             )}
                         </NavLink>
                     ))}
+
+                    {/* User / Auth section */}
+                    {user ? (
+                        <div className="flex items-center gap-1 ml-1">
+                            {/* Profile link */}
+                            <NavLink
+                                to="/profile"
+                                title="Profile"
+                                aria-label="Profile"
+                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200"
+                                style={({ isActive }) => ({
+                                    color: isActive ? "#fff" : "rgba(255,255,255,0.85)",
+                                    background: isActive ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)",
+                                    fontFamily: "'Inter', sans-serif",
+                                    textDecoration: "none",
+                                    fontSize: "0.875rem",
+                                    fontWeight: 600,
+                                })}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = "rgba(255,255,255,0.18)";
+                                    e.currentTarget.style.color = "#fff";
+                                }}
+                                onMouseLeave={(e) => {
+                                    const active = e.currentTarget.getAttribute("aria-current") === "page";
+                                    e.currentTarget.style.background = active ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)";
+                                    e.currentTarget.style.color = active ? "#fff" : "rgba(255,255,255,0.85)";
+                                }}
+                            >
+                                <FiUser size={16} />
+                                <span>{user.first_name}</span>
+                            </NavLink>
+
+                            {/* Logout button */}
+                            <button
+                                onClick={handleLogout}
+                                title="Logout"
+                                aria-label="Logout"
+                                className="px-3 py-1.5 rounded-xl text-sm font-semibold transition-all duration-200"
+                                style={{
+                                    fontFamily: "'Inter', sans-serif",
+                                    color: "rgba(255,255,255,0.7)",
+                                    background: "transparent",
+                                    border: "1px solid rgba(255,255,255,0.2)",
+                                    cursor: "pointer",
+                                    letterSpacing: "0.01em",
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = "rgba(255,80,80,0.18)";
+                                    e.currentTarget.style.color = "#fca5a5";
+                                    e.currentTarget.style.borderColor = "rgba(255,80,80,0.4)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = "transparent";
+                                    e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)";
+                                }}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    ) : (
+                        /* Login link */
+                        <NavLink
+                            to="/login"
+                            title="Login"
+                            aria-label="Login"
+                            className="flex items-center gap-2 ml-1 px-3 py-1.5 rounded-xl transition-all duration-200"
+                            style={({ isActive }) => ({
+                                color: isActive ? "#fff" : "rgba(255,255,255,0.85)",
+                                background: isActive ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)",
+                                fontFamily: "'Inter', sans-serif",
+                                textDecoration: "none",
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                            })}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = "rgba(255,255,255,0.18)";
+                                e.currentTarget.style.color = "#fff";
+                            }}
+                            onMouseLeave={(e) => {
+                                const active = e.currentTarget.getAttribute("aria-current") === "page";
+                                e.currentTarget.style.background = active ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)";
+                                e.currentTarget.style.color = active ? "#fff" : "rgba(255,255,255,0.85)";
+                            }}
+                        >
+                            <FiUser size={16} />
+                            <span>Login</span>
+                        </NavLink>
+                    )}
                 </div>
             </div>
         </nav>
