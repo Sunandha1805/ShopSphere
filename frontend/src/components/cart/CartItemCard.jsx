@@ -30,8 +30,8 @@ const CartItemCard = ({ item, onIncrease, onDecrease, onRemove }) => {
                             ₹{Number(item.price).toLocaleString()}
                         </span>
                         {Number(item.discount_percent) > 0 && (
-                            <span className="text-[11px] font-bold text-orange-500 flex items-center gap-0.5">
-                                ↓ {parseInt(item.discount_percent)}% off
+                            <span className="text-xs font-semibold text-orange-500">
+                                -{parseInt(item.discount_percent)}%
                             </span>
                         )}
                     </div>

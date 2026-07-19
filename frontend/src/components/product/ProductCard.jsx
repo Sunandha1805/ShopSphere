@@ -1,7 +1,26 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FiHeart } from "react-icons/fi";
+import { addToWishlist } from "../../services/wishlistService";
+import toast from "react-hot-toast";
 
 const ProductCard = ({ product }) => {
+    const [wishlisted, setWishlisted] = useState(false);
+
+    const handleWishlist = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+            await addToWishlist(product.product_id);
+            setWishlisted(true);
+            toast.success("Added to wishlist!");
+        } catch (error) {
+            toast.error(
+                error.response?.data?.message || "Failed to add to wishlist"
+            );
+        }
+    };
+
     return (
         <div
             style={{
@@ -50,12 +69,13 @@ const ProductCard = ({ product }) => {
                 {/* Wishlist button */}
                 <button
                     aria-label="Add to wishlist"
+                    onClick={handleWishlist}
                     style={{
                         position: "absolute",
                         top: 10,
                         right: 10,
-                        background: "#fff",
-                        border: "1px solid #e2e8f0",
+                        background: wishlisted ? "#fff1f2" : "#fff",
+                        border: wishlisted ? "1px solid #fecdd3" : "1px solid #e2e8f0",
                         borderRadius: "50%",
                         width: 34,
                         height: 34,
@@ -63,20 +83,24 @@ const ProductCard = ({ product }) => {
                         alignItems: "center",
                         justifyContent: "center",
                         cursor: "pointer",
-                        color: "#94a3b8",
+                        color: wishlisted ? "#e11d48" : "#94a3b8",
                         boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                        transition: "color 0.2s, border-color 0.2s",
+                        transition: "color 0.2s, border-color 0.2s, background 0.2s",
                     }}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "#e11d48";
-                        e.currentTarget.style.borderColor = "#fecdd3";
+                        if (!wishlisted) {
+                            e.currentTarget.style.color = "#e11d48";
+                            e.currentTarget.style.borderColor = "#fecdd3";
+                        }
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.color = "#94a3b8";
-                        e.currentTarget.style.borderColor = "#e2e8f0";
+                        if (!wishlisted) {
+                            e.currentTarget.style.color = "#94a3b8";
+                            e.currentTarget.style.borderColor = "#e2e8f0";
+                        }
                     }}
                 >
-                    <FiHeart size={15} />
+                    <FiHeart size={15} fill={wishlisted ? "#e11d48" : "none"} />
                 </button>
 
                 {/* Out of stock badge */}

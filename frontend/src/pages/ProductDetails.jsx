@@ -4,6 +4,7 @@ import { FiHeart, FiShoppingCart, FiArrowLeft, FiPackage } from "react-icons/fi"
 import { getProductById } from "../services/productService";
 
 import { addToCart } from "../services/cartService";
+import { addToWishlist } from "../services/wishlistService";
 import toast from "react-hot-toast";
 
 const ProductDetails = () => {
@@ -13,6 +14,7 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [wishlisted, setWishlisted] = useState(false);
 
     const handleAddToCart = async () => {
         try {
@@ -23,6 +25,20 @@ const ProductDetails = () => {
             toast.error(
                 error.response?.data?.message ||
                 "Failed to add product."
+            );
+        }
+    };
+
+    const handleAddToWishlist = async () => {
+        try {
+            await addToWishlist(product.product_id);
+            setWishlisted(true);
+            toast.success("Added to wishlist!");
+        } catch (error) {
+            console.error(error);
+            toast.error(
+                error.response?.data?.message ||
+                "Failed to add to wishlist."
             );
         }
     };
@@ -171,43 +187,38 @@ const ProductDetails = () => {
                         />
                     </div>
 
-                    {/* Price */}
-                    <p
-                        style={{
-                            fontSize: "1.6rem",
-                            fontWeight: 700,
-                            color: "#0d9488",
-                            margin: 0,
-                            letterSpacing: "-0.01em",
-                            fontFamily: "'Inter', sans-serif",
-                        }}
-                    >
-                        ₹{Number(product.price).toLocaleString()}
-                    </p>
+                    {/* Price + Discount */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <p
+                            style={{
+                                fontSize: "1.6rem",
+                                fontWeight: 700,
+                                color: "#0d9488",
+                                margin: 0,
+                                letterSpacing: "-0.01em",
+                                fontFamily: "'Inter', sans-serif",
+                            }}
+                        >
+                            ₹{Number(product.price).toLocaleString()}
+                        </p>
 
-                    {/* Stock badge */}
-                    <div>
-                        {inStock ? (
+                        {Number(product.discount_percent) > 0 && (
                             <span
                                 style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 4,
-                                    background: "#f0fdf4",
-                                    color: "#16a34a",
-                                    border: "1px solid #bbf7d0",
-                                    fontSize: "0.65rem",
-                                    fontWeight: 600,
-                                    padding: "3px 8px",
-                                    borderRadius: 99,
+                                    fontSize: "0.8rem",
+                                    fontWeight: 700,
+                                    color: "#f97316",
                                     fontFamily: "'Inter', sans-serif",
-                                    letterSpacing: "0.02em",
                                 }}
                             >
-                                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />
-                                In Stock
+                                -{parseInt(product.discount_percent)}%
                             </span>
-                        ) : (
+                        )}
+                    </div>
+
+                    {/* Stock badge — only shown when out of stock */}
+                    {!inStock && (
+                        <div>
                             <span
                                 style={{
                                     display: "inline-flex",
@@ -227,8 +238,8 @@ const ProductDetails = () => {
                                 <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#dc2626", display: "inline-block" }} />
                                 Out of Stock
                             </span>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
 
                     {/* Action buttons */}
@@ -265,33 +276,38 @@ const ProductDetails = () => {
                         </button>
 
                         <button
+                            onClick={handleAddToWishlist}
                             style={{
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 gap: 8,
-                                background: "#fff",
-                                color: "#374151",
-                                border: "1px solid #e2e8f0",
+                                background: wishlisted ? "#fff1f2" : "#fff",
+                                color: wishlisted ? "#e11d48" : "#374151",
+                                border: wishlisted ? "1px solid #fecdd3" : "1px solid #e2e8f0",
                                 borderRadius: 10,
                                 padding: "11px 18px",
                                 fontSize: "0.88rem",
                                 fontWeight: 600,
                                 fontFamily: "'Inter', sans-serif",
                                 cursor: "pointer",
-                                transition: "border-color 0.2s, color 0.2s",
+                                transition: "border-color 0.2s, color 0.2s, background 0.2s",
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = "#fca5a5";
-                                e.currentTarget.style.color = "#e11d48";
+                                if (!wishlisted) {
+                                    e.currentTarget.style.borderColor = "#fca5a5";
+                                    e.currentTarget.style.color = "#e11d48";
+                                }
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = "#e2e8f0";
-                                e.currentTarget.style.color = "#374151";
+                                if (!wishlisted) {
+                                    e.currentTarget.style.borderColor = "#e2e8f0";
+                                    e.currentTarget.style.color = "#374151";
+                                }
                             }}
                         >
-                            <FiHeart size={15} />
-                            Wishlist
+                            <FiHeart size={15} fill={wishlisted ? "#e11d48" : "none"} />
+                            {wishlisted ? "Wishlisted" : "Wishlist"}
                         </button>
                     </div>
                 </div>
