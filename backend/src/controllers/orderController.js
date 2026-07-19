@@ -220,10 +220,32 @@ const checkout = async (req, res) => {
 const getMyOrders = async (req, res) => {
     try {
         const [orders] = await pool.query(
-            `SELECT order_id, order_date, order_status, payment_status, total_amount
-             FROM orders
-             WHERE user_id = ?
-             ORDER BY order_date DESC`,
+            `SELECT
+                o.order_id,
+                o.order_date,
+                o.order_status,
+                o.payment_status,
+                o.total_amount,
+                COUNT(oi.order_item_id) AS item_count,
+                (
+                    SELECT p.image_url
+                    FROM order_items oi2
+                    JOIN products p ON oi2.product_id = p.product_id
+                    WHERE oi2.order_id = o.order_id
+                    LIMIT 1
+                ) AS preview_image_1,
+                (
+                    SELECT p.image_url
+                    FROM order_items oi3
+                    JOIN products p ON oi3.product_id = p.product_id
+                    WHERE oi3.order_id = o.order_id
+                    LIMIT 1 OFFSET 1
+                ) AS preview_image_2
+             FROM orders o
+             LEFT JOIN order_items oi ON o.order_id = oi.order_id
+             WHERE o.user_id = ?
+             GROUP BY o.order_id
+             ORDER BY o.order_date DESC`,
             [req.user.userId]
         );
 
@@ -278,8 +300,11 @@ const getOrderById = async (req, res) => {
 
         const [items] = await pool.query(
             `SELECT
+                oi.order_item_id,
                 oi.product_id,
                 p.product_name,
+                p.image_url,
+                p.brand,
                 oi.quantity,
                 oi.price,
                 oi.subtotal
