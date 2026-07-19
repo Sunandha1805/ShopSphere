@@ -48,6 +48,7 @@ const Navbar = () => {
                         { to: "/", label: "Home" },
                         { to: "/products", label: "Products" },
                         { to: "/orders", label: "Orders" },
+                        { to: "/addresses", label: "Addresses" },
                     ].map(({ to, label }) => (
                         <NavLink
                             key={to}

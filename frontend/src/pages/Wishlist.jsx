@@ -168,12 +168,6 @@ const Wishlist = () => {
                             </div>
                         </div>
 
-                        <div className="border-t border-gray-100 pt-4 mb-5">
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                                <FiPackage size={13} className="text-teal-500" />
-                                Items are saved until you remove them.
-                            </div>
-                        </div>
 
                         <button
                             onClick={() => navigate("/products")}
