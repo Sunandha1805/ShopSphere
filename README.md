@@ -163,9 +163,7 @@ JWT_SECRET=
 ## 👩‍💻 Author
 
 **Sunandha**\
-Third-Year Information Technology Student\
+Final-Year Information Technology Student\
 Army Institute of Technology, Pune
 
-------------------------------------------------------------------------
 
-⭐ If you found this project useful, consider giving it a star!
