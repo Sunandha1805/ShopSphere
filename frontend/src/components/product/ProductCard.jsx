@@ -1,22 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FiHeart } from "react-icons/fi";
-import { addToWishlist } from "../../services/wishlistService";
+import { FiHeart, FiStar } from "react-icons/fi";
+import { addToWishlist, removeWishlistByProductId } from "../../services/wishlistService";
+import { useCartWishlist } from "../../context/CartWishlistContext";
 import toast from "react-hot-toast";
 
 const ProductCard = ({ product }) => {
+    const { wishlistItems, refreshCounts } = useCartWishlist();
     const [wishlisted, setWishlisted] = useState(false);
+
+    useEffect(() => {
+        if (wishlistItems && product?.product_id) {
+            setWishlisted(wishlistItems.includes(product.product_id));
+        }
+    }, [wishlistItems, product?.product_id]);
 
     const handleWishlist = async (e) => {
         e.preventDefault();
         e.stopPropagation();
         try {
-            await addToWishlist(product.product_id);
-            setWishlisted(true);
-            toast.success("Added to wishlist!");
+            if (wishlisted) {
+                await removeWishlistByProductId(product.product_id);
+                setWishlisted(false);
+                refreshCounts();
+                toast.success("Removed from wishlist");
+            } else {
+                await addToWishlist(product.product_id);
+                setWishlisted(true);
+                refreshCounts();
+                toast.success("Added to wishlist!");
+            }
         } catch (error) {
             toast.error(
-                error.response?.data?.message || "Failed to add to wishlist"
+                error.response?.data?.message || "Failed to update wishlist"
             );
         }
     };
@@ -158,7 +174,7 @@ const ProductCard = ({ product }) => {
                         fontWeight: 600,
                         color: "#0f172a",
                         lineHeight: 1.45,
-                        margin: "2px 0 0",
+                        margin: "2px 0 6px",
                         fontFamily: "'Inter', sans-serif",
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
@@ -168,6 +184,16 @@ const ProductCard = ({ product }) => {
                 >
                     {product.product_name}
                 </h2>
+
+                {/* Rating (if any) */}
+                {product.rating > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                        <FiStar size={12} fill="#f59e0b" stroke="#f59e0b" />
+                        <span style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500 }}>
+                            {Number(product.rating).toFixed(1)}
+                        </span>
+                    </div>
+                )}
 
                 {/* Price + CTA */}
                 <div

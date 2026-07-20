@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCart, updateCartItem, removeCartItem, clearCart } from "../services/cartService";
+import { useCartWishlist } from "../context/CartWishlistContext";
 import CartItemCard from "../components/cart/CartItemCard";
 import { FiShoppingCart } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const Cart = () => {
     const navigate = useNavigate();
+    const { refreshCounts } = useCartWishlist();
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -54,6 +56,7 @@ const Cart = () => {
         try {
             await removeCartItem(cartItemId);
             await fetchCart();
+            refreshCounts();
             toast.success("Item removed");
         } catch (error) {
             console.error(error);
@@ -65,6 +68,7 @@ const Cart = () => {
         try {
             await clearCart();
             await fetchCart();
+            refreshCounts();
             toast.success("Cart cleared successfully");
         } catch (error) {
             console.error(error);

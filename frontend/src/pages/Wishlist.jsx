@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getWishlist, removeWishlistItem, clearWishlist } from "../services/wishlistService";
 import { addToCart } from "../services/cartService";
+import { useCartWishlist } from "../context/CartWishlistContext";
 import WishlistItemCard from "../components/wishlist/WishlistItemCard";
 import { FiHeart, FiPackage } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 const Wishlist = () => {
     const navigate = useNavigate();
+    const { refreshCounts } = useCartWishlist();
     const [wishlist, setWishlist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -32,6 +34,7 @@ const Wishlist = () => {
         try {
             await removeWishlistItem(wishlist_item_id);
             await fetchWishlist();
+            refreshCounts();
             toast.success("Item removed from wishlist");
         } catch (error) {
             console.error(error);
@@ -44,6 +47,7 @@ const Wishlist = () => {
             await addToCart(item.product_id);
             await removeWishlistItem(item.wishlist_item_id);
             await fetchWishlist();
+            refreshCounts();
             toast.success("Moved to cart!");
         } catch (error) {
             console.error(error);
@@ -57,6 +61,7 @@ const Wishlist = () => {
         try {
             await clearWishlist();
             await fetchWishlist();
+            refreshCounts();
             toast.success("Wishlist cleared");
         } catch (error) {
             console.error(error);

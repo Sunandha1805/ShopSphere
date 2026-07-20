@@ -4,6 +4,7 @@ const {
     getWishlist,
     addToWishlist,
     removeWishlistItem,
+    removeWishlistByProductId,
     clearWishlist
 } = require("../controllers/wishlistController");
 
@@ -17,6 +18,7 @@ router.use(protect);
 router.get("/", getWishlist);
 router.post("/items", addToWishlist);
 router.delete("/items/:id", removeWishlistItem);
+router.delete("/product/:productId", removeWishlistByProductId);
 router.delete("/", clearWishlist);
 
 module.exports = router;

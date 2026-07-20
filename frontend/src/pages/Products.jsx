@@ -9,25 +9,31 @@ const Products = () => {
     const [error, setError] = useState("");
     const [totalPages, setTotalPages] = useState(1);
 
-    // Sync page with URL: /products?page=3
+    // Sync page + category + search with URL
     const [searchParams, setSearchParams] = useSearchParams();
     const currentPage = Math.max(parseInt(searchParams.get("page")) || 1, 1);
+    const categoryFilter = searchParams.get("category") || "";
+    const searchFilter = searchParams.get("search") || "";
 
     const setCurrentPage = (page) => {
-        setSearchParams({ page });
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            next.set("page", page);
+            return next;
+        });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     useEffect(() => {
-        fetchProducts(currentPage);
-    }, [currentPage]);
+        fetchProducts(currentPage, categoryFilter, searchFilter);
+    }, [currentPage, categoryFilter, searchFilter]);
 
-    const fetchProducts = async (page) => {
+    const fetchProducts = async (page, category, search) => {
         try {
             setLoading(true);
             setError("");
 
-            const data = await getProducts(page, 12);
+            const data = await getProducts(page, 12, category, search);
             setProducts(data.data);
             if (data.pagination) {
                 setTotalPages(data.pagination.totalPages);

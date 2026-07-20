@@ -231,11 +231,48 @@ const removeWishlistItem = async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: "Failed to remove product from wishlist"
+            message: "Failed to remove item from wishlist"
         });
     }
 };
 
+// REMOVE ITEM FROM WISHLIST BY PRODUCT ID
+const removeWishlistByProductId = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const productId = req.params.productId;
+
+        const [result] =
+            await pool.query(
+                `DELETE wi
+                 FROM wishlist_items wi
+                 JOIN wishlist w
+                    ON wi.wishlist_id = w.wishlist_id
+                 WHERE wi.product_id = ?
+                 AND w.user_id = ?`,
+                [productId, userId]
+            );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found in wishlist"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Product removed from wishlist successfully"
+        });
+
+    } catch (error) {
+        console.error("Error removing from wishlist by product id:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to remove product from wishlist"
+        });
+    }
+};
 
 // CLEAR ENTIRE WISHLIST
 const clearWishlist = async (req, res) => {
@@ -275,5 +312,6 @@ module.exports = {
     getWishlist,
     addToWishlist,
     removeWishlistItem,
+    removeWishlistByProductId,
     clearWishlist
 };

@@ -1,8 +1,38 @@
-import { useState } from "react";
-import { FiSearch } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FiSearch, FiX } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
 
 const SearchBar = () => {
     const [focused, setFocused] = useState(false);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [value, setValue] = useState(searchParams.get("search") || "");
+
+    // Keep input in sync if URL changes externally (e.g. back button)
+    useEffect(() => {
+        setValue(searchParams.get("search") || "");
+    }, [searchParams]);
+
+    const applySearch = (query) => {
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            if (query.trim()) {
+                next.set("search", query.trim());
+            } else {
+                next.delete("search");
+            }
+            next.set("page", "1"); // reset to page 1 on new search
+            return next;
+        });
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") applySearch(value);
+    };
+
+    const handleClear = () => {
+        setValue("");
+        applySearch("");
+    };
 
     return (
         <div
@@ -18,9 +48,7 @@ const SearchBar = () => {
                 padding: "7px 14px",
                 width: 260,
                 transition: "all 0.2s ease",
-                boxShadow: focused
-                    ? "0 0 0 3px rgba(255,255,255,0.1)"
-                    : "none",
+                boxShadow: focused ? "0 0 0 3px rgba(255,255,255,0.1)" : "none",
             }}
         >
             <FiSearch
@@ -29,14 +57,19 @@ const SearchBar = () => {
                     color: focused ? "#fff" : "rgba(255,255,255,0.6)",
                     flexShrink: 0,
                     transition: "color 0.2s ease",
+                    cursor: "pointer",
                 }}
+                onClick={() => applySearch(value)}
             />
             <input
                 type="text"
                 placeholder="Search products..."
-                className="search-input-dark"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={handleKeyDown}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
+                className="search-input-dark"
                 style={{
                     border: "none",
                     outline: "none",
@@ -49,6 +82,13 @@ const SearchBar = () => {
                     letterSpacing: "0.01em",
                 }}
             />
+            {value && (
+                <FiX
+                    size={14}
+                    style={{ color: "rgba(255,255,255,0.6)", cursor: "pointer", flexShrink: 0 }}
+                    onClick={handleClear}
+                />
+            )}
         </div>
     );
 };

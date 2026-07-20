@@ -4,21 +4,31 @@ import { FiHeart, FiShoppingCart, FiArrowLeft, FiPackage } from "react-icons/fi"
 import { getProductById } from "../services/productService";
 
 import { addToCart } from "../services/cartService";
-import { addToWishlist } from "../services/wishlistService";
+import { addToWishlist, removeWishlistByProductId } from "../services/wishlistService";
+import { useCartWishlist } from "../context/CartWishlistContext";
+import ProductReviews, { Stars } from "../components/product/ProductReviews";
 import toast from "react-hot-toast";
 
 const ProductDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { wishlistItems, refreshCounts } = useCartWishlist();
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [wishlisted, setWishlisted] = useState(false);
 
+    useEffect(() => {
+        if (wishlistItems && product?.product_id) {
+            setWishlisted(wishlistItems.includes(product.product_id));
+        }
+    }, [wishlistItems, product?.product_id]);
+
     const handleAddToCart = async () => {
         try {
             await addToCart(product.product_id);
+            refreshCounts();
             toast.success("Product added to cart!");
         } catch (error) {
             console.error(error);
@@ -31,14 +41,22 @@ const ProductDetails = () => {
 
     const handleAddToWishlist = async () => {
         try {
-            await addToWishlist(product.product_id);
-            setWishlisted(true);
-            toast.success("Added to wishlist!");
+            if (wishlisted) {
+                await removeWishlistByProductId(product.product_id);
+                setWishlisted(false);
+                refreshCounts();
+                toast.success("Removed from wishlist");
+            } else {
+                await addToWishlist(product.product_id);
+                setWishlisted(true);
+                refreshCounts();
+                toast.success("Added to wishlist!");
+            }
         } catch (error) {
             console.error(error);
             toast.error(
                 error.response?.data?.message ||
-                "Failed to add to wishlist."
+                "Failed to update wishlist."
             );
         }
     };
@@ -216,6 +234,16 @@ const ProductDetails = () => {
                         )}
                     </div>
 
+                    {/* Rating display */}
+                    {product.rating > 0 && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                            <Stars rating={Math.round(product.rating)} size={14} />
+                            <span style={{ fontSize: "0.8rem", color: "#6b7280", fontWeight: 500 }}>
+                                {Number(product.rating).toFixed(1)}
+                            </span>
+                        </div>
+                    )}
+
                     {/* Stock badge — only shown when out of stock */}
                     {!inStock && (
                         <div>
@@ -359,6 +387,9 @@ const ProductDetails = () => {
                     </p>
                 </div>
             </div>
+
+            {/* Reviews Section */}
+            <ProductReviews productId={product.product_id} />
         </div>
     );
 };

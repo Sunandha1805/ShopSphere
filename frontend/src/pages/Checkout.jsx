@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiX, FiMapPin, FiCreditCard, FiCheckCircle } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 import AddressCard from "../components/address/AddressCard";
 import PaymentMethod from "../components/checkout/PaymentMethod";
 import OrderSummary from "../components/checkout/OrderSummary";
+import { useCartWishlist } from "../context/CartWishlistContext";
 
 import { getAddresses } from "../services/addressService";
 import { getCart } from "../services/cartService";
@@ -12,6 +14,7 @@ import { checkout } from "../services/orderService";
 
 const Checkout = () => {
     const navigate = useNavigate();
+    const { refreshCounts } = useCartWishlist();
 
     const [addresses, setAddresses] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState(null);
@@ -21,6 +24,7 @@ const Checkout = () => {
     const [paymentMethod, setPaymentMethod] = useState("COD");
 
     const [loading, setLoading] = useState(true);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [placingOrder, setPlacingOrder] = useState(false);
 
     useEffect(() => {
@@ -56,11 +60,16 @@ const Checkout = () => {
         }
     };
 
-    const handlePlaceOrder = async () => {
+    const handleInitiateOrder = () => {
         if (!selectedAddress) {
             toast.error("Please select a shipping address.");
             return;
         }
+        setShowConfirm(true);
+    };
+
+    const confirmAndPlaceOrder = async () => {
+        if (!selectedAddress) return;
 
         try {
             setPlacingOrder(true);
@@ -71,6 +80,7 @@ const Checkout = () => {
             );
 
             toast.success(response.message);
+            refreshCounts();
 
             navigate("/orders");
 
@@ -83,6 +93,7 @@ const Checkout = () => {
             );
         } finally {
             setPlacingOrder(false);
+            setShowConfirm(false);
         }
     };
 
@@ -110,6 +121,8 @@ const Checkout = () => {
             </div>
         );
     }
+
+    const selectedAddressObj = addresses.find(a => a.address_id === selectedAddress);
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-8">
@@ -143,7 +156,7 @@ const Checkout = () => {
 
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 max-h-[320px] overflow-y-auto pr-2" style={{ scrollbarWidth: "thin" }}>
 
                             {addresses.map((address) => (
                                 <AddressCard
@@ -173,10 +186,84 @@ const Checkout = () => {
                 <OrderSummary
                     cart={cart}
                     placingOrder={placingOrder}
-                    handlePlaceOrder={handlePlaceOrder}
+                    handlePlaceOrder={handleInitiateOrder}
                 />
 
             </div>
+
+            {/* Confirmation Modal */}
+            {showConfirm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <h3 className="text-xl font-bold text-gray-900">Confirm Your Order</h3>
+                            <button onClick={() => setShowConfirm(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <FiX size={24} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-6">
+                            {/* Summary Details */}
+                            <div className="bg-gray-50 rounded-xl p-5 space-y-4 border border-gray-100">
+                                
+                                <div className="flex items-start gap-3">
+                                    <FiMapPin className="text-teal-600 mt-1 flex-shrink-0" size={18} />
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-800">Shipping To</p>
+                                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                                            {selectedAddressObj?.address_line_1}, {selectedAddressObj?.address_line_2 && `${selectedAddressObj.address_line_2}, `}
+                                            {selectedAddressObj?.city}, {selectedAddressObj?.state} - {selectedAddressObj?.postal_code}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-gray-200 pt-4 flex items-start gap-3">
+                                    <FiCreditCard className="text-teal-600 mt-0.5 flex-shrink-0" size={18} />
+                                    <div className="flex-1 flex justify-between items-center">
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800">Payment Method</p>
+                                            <p className="text-sm text-gray-600 mt-0.5">{paymentMethod === "COD" ? "Cash on Delivery" : paymentMethod}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="border-t border-gray-200 pt-4 flex items-start gap-3">
+                                    <FiCheckCircle className="text-teal-600 mt-0.5 flex-shrink-0" size={18} />
+                                    <div className="flex-1 flex justify-between items-center">
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800">Order Total</p>
+                                            <p className="text-sm text-gray-600 mt-0.5">{cart.total_items} items</p>
+                                        </div>
+                                        <p className="text-lg font-extrabold text-teal-700">₹{Number(cart.total_amount).toLocaleString()}</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                            <p className="text-xs text-gray-500 text-center">
+                                By confirming this order, you agree to ShopSphere's Terms of Service and Privacy Policy.
+                            </p>
+                        </div>
+                        
+                        <div className="p-6 pt-0 flex gap-3">
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                disabled={placingOrder}
+                                className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmAndPlaceOrder}
+                                disabled={placingOrder}
+                                className="flex-1 py-3 px-4 rounded-xl bg-teal-600 text-white font-bold hover:bg-teal-700 shadow-lg shadow-teal-500/25 transition-all flex justify-center items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {placingOrder ? "Processing..." : "Confirm & Pay"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
